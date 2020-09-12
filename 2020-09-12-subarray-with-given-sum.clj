@@ -40,7 +40,6 @@
   )
 
 (comment
-  
   (create-test-case 5 12)
   (create-test-case 10 15)
 
@@ -66,13 +65,11 @@
   (partition 8 1 t2)
   (partition 9 1 t2)
   (partition 10 1 t2)
-  
 
   (range (count t2))
 
   (map #(partition %1 1 t2) )
 
-  
   (let [test-array t2
         p-sizes (map inc (range (count test-array)))
         sub-arrays (map #(partition %1 1 test-array) p-sizes)
@@ -82,9 +79,4 @@
     [(take 1 (second sub-arrays) ) 
      summed]
     )
-
-  
-  
-
-
-  )
+)

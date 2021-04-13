@@ -1,3 +1,5 @@
+(ns clojure-practice.2020-08-11.access_log
+  (:require clojure.string))
 ;; You have access log from a host serving foo.com traffic, with
 ;; information about request timestamps, UserIdentifiers, the product page
 ;; url and Status Code of the request.

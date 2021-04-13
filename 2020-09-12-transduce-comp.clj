@@ -1,3 +1,5 @@
+(ns clojure-practice.2020-09-12.transduce-comp)
+
 ;; In this exercise I explore how to compose functions in different ways using
 ;; a set of monthly expenses and calculating 3, 6 and 12 month totals
 ;; Each function/solution is intended to compute the same value (or nearly the same due to floating point math)

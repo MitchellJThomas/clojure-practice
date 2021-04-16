@@ -1,4 +1,4 @@
-(ns clojure-practice.2020-08-11.access_log
+(ns clojure-practice.2020-08-11.access-log
   (:require clojure.string))
 ;; You have access log from a host serving foo.com traffic, with
 ;; information about request timestamps, UserIdentifiers, the product page

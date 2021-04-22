@@ -44,9 +44,8 @@
 (comment
   (def ss (apply sorted-set (map :end test-data-two-overlaps-1)))
   (def sm (sorted-map))
-  
-  (for [td test-data-two-overlaps-1]
-    (add-new-item-map sm td))
+
+  (def sm (reduce add-new-item-map sm test-data-two-overlaps-1))
   
   (def new-item {:start (jt/local-date-time 2021 04 20 20 20 00)
                  :end (jt/local-date-time 2021 04 20 20 21 01)})

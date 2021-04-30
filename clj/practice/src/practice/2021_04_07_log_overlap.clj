@@ -1,5 +1,6 @@
 (ns practice.2021-04-07-log-overlap
-  (:require [java-time :as jt]))
+  (:require [java-time :as jt]
+            [clojure.test :refer [is deftest]]))
 
 (defn get-logs
   "Get an iterator of simulated logs lines. Each log items is a map with :start and :end instances."
@@ -9,27 +10,6 @@
                       end-time-shift #(jt/minutes (rand-int 120))]
                   (map (fn [s] {:start s :end (jt/plus s (end-time-shift))}) start-times))))
 
-(def test-data-zero-overlaps
-  [{:start (jt/local-date-time 2021 04 20 20 00 00)
-    :end   (jt/local-date-time 2021 04 20 20 10 01)}
-   {:start (jt/local-date-time 2021 04 20 20 10 02)
-    :end   (jt/local-date-time 2021 04 20 20 20 01)}
-   {:start (jt/local-date-time 2021 04 20 20 20 02)
-    :end   (jt/local-date-time 2021 04 20 20 30 01)}
-   ])
-
-(def test-data-two-overlaps-1
-  [{:start (jt/local-date-time 2021 04 20 20 00 00)
-    :end   (jt/local-date-time 2021 04 20 20 10 01)}
-   {:start (jt/local-date-time 2021 04 20 20 10 00)
-    :end   (jt/local-date-time 2021 04 20 20 20 01)}
-   {:start (jt/local-date-time 2021 04 20 20 20 00)
-    :end   (jt/local-date-time 2021 04 20 20 30 01)}
-   ])
-
-(defn add-new-item [sorted-thing log-item]
-  (conj sorted-thing (:end log-item)))
-
 (defn count-overlaps [sorted-thing log-item]
   (let [start-date (:start log-item)]
     (count (subseq sorted-thing >= start-date))))
@@ -37,22 +17,40 @@
 (defn add-new-item-map [s-map log-item]
   (update s-map (:end log-item) (fn [v] (inc (or v 0)))))
 
-(defn count-overlaps-map [s-map log-item]
-  (let [start-date (:start log-item)]
-    (count (subseq s-map >= start-date))))
+(defn sorted-logs [logs]
+  (reduce add-new-item-map (sorted-map) logs))
+
+(def daytime {:start (jt/local-date-time 2021 04 20  8  0  0)
+              :end   (jt/local-date-time 2021 04 20 21  0  0)})
+(def morning {:start (jt/local-date-time 2021 04 20  0  0  0)
+              :end   (jt/local-date-time 2021 04 20  7 30  0)})
+(def sunrise {:start (jt/local-date-time 2021 04 20  7 30  1)
+              :end   (jt/local-date-time 2021 04 20  8 30  0)})
+
+(def midday  {:start (jt/local-date-time 2021 04 20  8 30  1)
+              :end   (jt/local-date-time 2021 04 20 20 30  0)})
+(def sunset  {:start (jt/local-date-time 2021 04 20 20 30  1)
+              :end   (jt/local-date-time 2021 04 20 21 30  0)})
+(def night   {:start (jt/local-date-time 2021 04 20 21 30  1)
+              :end   (jt/local-date-time 2021 04 20 23 59 59)})
+
+(deftest overlapping
+  (let [day (sorted-logs [daytime])
+        fullday (sorted-logs [morning sunrise midday sunset night])]
+    (is (= 0 (count-overlaps day morning)) "morning is before daytime")
+    (is (= 1 (count-overlaps day sunrise)) "sunrise has left overlap with daytime")
+    (is (= 1 (count-overlaps day midday)) "midday is totally overlapped by daytime")
+    (is (= 1 (count-overlaps day sunset)) "sunset has right overlap with daytime")
+    (is (= 0 (count-overlaps day night)) "night is after daytime")
+    (is (= 3 (count-overlaps fullday daytime))) "daytime overlaps with sunrise, midday and sunset")
+  )
 
 (comment
-  (def ss (apply sorted-set (map :end test-data-two-overlaps-1)))
-  (def sm (sorted-map))
-
-  (def sm (reduce add-new-item-map sm test-data-two-overlaps-1))
-  
-  (def new-item {:start (jt/local-date-time 2021 04 20 20 20 00)
-                 :end (jt/local-date-time 2021 04 20 20 21 01)})
-  (count-overlaps ss new-item)
-  (def ss (add-new-item ss new-item))
-  (def sm (add-new-item-map sm new-item))
-  (reduce + (subseq sm >= (:start new-item)))
+  (let [start-date (:start daytime)
+        fullday (sorted-logs [morning sunrise midday sunset night])
+                sub-full (subseq fullday > start-date)]
+    (count sub-full)
+    )
   
   ;; java-time fun
   (jt/local-time 10)

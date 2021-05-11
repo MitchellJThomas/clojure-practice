@@ -10,16 +10,20 @@
                       end-time-shift #(jt/minutes (rand-int 120))]
                   (map (fn [s] {:start s :end (jt/plus s (end-time-shift))}) start-times))))
 
-(defn count-occurs-after [sorted-timestamp-map log-item-timestamp]
-  (count (subseq sorted-timestamp-map >= log-item-timestamp)))
+(defn count-end-overlaps [sorted-end-timestamp-map log-item]
+  (count (subseq sorted-end-timestamp-map
+                 >= (:start log-item)
+                 <= (:end log-item))))
 
-(defn count-occurs-before [sorted-timestamp-map log-item-timestamp]
-  (count (subseq sorted-timestamp-map <= log-item-timestamp)))
+(defn count-start-overlaps [sorted-start-timestamp-map log-item]
+  (count (subseq sorted-start-timestamp-map
+                 >= (:start log-item)
+                 <= (:end log-item))))
 
 (defn count-overlaps [sorted-start-timestamps sorted-end-timestamps log-item]
-  (-
-   (count-occurs-after sorted-start-timestamps (:end log-item))
-   (count-occurs-before sorted-end-timestamps (:start log-item)))
+  (+
+   (count-start-overlaps sorted-start-timestamps log-item)
+   (count-end-overlaps sorted-end-timestamps log-item))
   )
 
 (defn update-count-map [count-map log-item-ts]
@@ -49,19 +53,36 @@
         fullday-end-map (sorted-timestamp-map (map :end [morning sunrise midday sunset night]))
         fullday-start-map (sorted-timestamp-map (map :start [morning sunrise midday sunset night]))]
     (is (= 0 (count-overlaps start-o-day end-o-day morning)) "morning starts and ends before day starts")
-    (is (= 1 (count-occurs-after end-o-day (:start sunrise))) "sunrise has left overlap with daytime")
-    (is (= 1 (count-occurs-after end-o-day (:start midday))) "midday is totally overlapped by daytime")
-    (is (= 1 (count-occurs-after end-o-day (:start sunset))) "sunset has right overlap with daytime")
-    (is (= 0 (count-occurs-after end-o-day (:start night))) "night is after daytime")
-    (is (= 3 (count-occurs-after fullday-end-map (:start daytime)))) "daytime overlaps with sunrise, midday and sunset")
-  )
+    (is (= 1 (count-overlaps start-o-day end-o-day sunrise)) "sunrise starts before and ends after a day starts")
+    (is (= 1 (count-overlaps start-o-day end-o-day midday)) "midday starts after day starts and ends before a day ends")
+    (is (= 1 (count-overlaps start-o-day end-o-day sunset)) "sunset starts before and ends after a day ends")
+    (is (= 0 (count-overlaps start-o-day end-o-day night)) "night starts and ends after a day ends")))
 
 (comment
   (let [start-date (:start daytime)
-        fullday (sorted-logs [morning sunrise midday sunset night])
+        fullday (sorted-timestamp-map [morning sunrise midday sunset night])
                 sub-full (subseq fullday > start-date)]
     (count sub-full)
     )
+
+  (defn count-start-overlaps [sorted-start-timestamp-map log-item]
+    (count (subseq sorted-start-timestamp-map <= (:start log-item) >= (:end log-item))))
+
+  
+
+  (subseq (sorted-timestamp-map [(:start daytime)])
+          >= (:start sunrise)
+          <= (:end sunrise)          
+          )
+
+  (subseq (sorted-timestamp-map [(:end daytime)])
+          >= (:start sunrise)
+          <= (:end sunrise)
+          )
+
+  (let [end-o-day (sorted-timestamp-map [(:end daytime)])]
+    (count-start-overlaps end-o-day sunrise))
+  
   
   ;; java-time fun
   (jt/local-time 10)

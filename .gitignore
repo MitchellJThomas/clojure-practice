@@ -13,4 +13,5 @@ pom.xml.asc
 .nrepl-port
 .cpcache/
 clj/crux-spaceport/data/*
+*.log
 *~

@@ -7,6 +7,7 @@
 
 (def server "https://confluence.tripwire.com")
 (def rest-api (str server "/rest/api"))
+(def confluence-access-token (System/getenv "CONFLUENCE_TOKEN"))
 
 (defn rest-get
   ([url]
@@ -23,7 +24,7 @@
      )
    )
   ([url opts handler]
-   (let [personal-access-token "abc123"
+   (let [personal-access-token confluence-access-token
          options (conj {:user-agent "mthomas-clojure/0.0.1"
                         :oauth-token personal-access-token} opts)
          {:keys [body status] :as resp} @(http/get url options)]

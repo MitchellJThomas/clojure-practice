@@ -23,7 +23,7 @@
      )
    )
   ([url opts handler]
-   (let [personal-access-token "MTE2NDQ2MjM3NTg3OlVLHYkUb654l844qAdlaVxrC7QW"
+   (let [personal-access-token "abc123"
          options (conj {:user-agent "mthomas-clojure/0.0.1"
                         :oauth-token personal-access-token} opts)
          {:keys [body status] :as resp} @(http/get url options)]

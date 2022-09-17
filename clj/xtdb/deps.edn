@@ -1,0 +1,7 @@
+{:deps
+ {com.xtdb/xtdb-core {:mvn/version "1.20.0"}
+  com.xtdb/xtdb-rocksdb {:mvn/version "1.20.0"}
+  mvxcvi/multihash {:mvn/version "2.0.3"}}
+ 
+ 
+ }
